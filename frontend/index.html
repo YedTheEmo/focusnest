@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusNest - Your Second Brain</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/5.1.1/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script type="module">
+        import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+        // You can now use d3 here, or attach it to window if needed globally
+        window.d3 = d3;
+    </script>
+
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">FocusNest</h1>
+                <div class="header-actions">
+                    <button id="new-note-btn" class="btn btn-primary">+ New Note</button>
+                    <button id="search-toggle" class="btn btn-secondary">🔍 Search</button>
+                    <button id="graph-toggle" class="btn btn-secondary">📊 Graph</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-section">
+                    <h3>Recent Notes</h3>
+                    <div id="recent-notes" class="note-list"></div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>Daily Suggestions</h3>
+                    <div id="daily-suggestions" class="suggestion-list"></div>
+                    <button id="refresh-suggestions" class="btn btn-small">🔄 Refresh</button>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>Random Discovery</h3>
+                    <div id="random-note" class="suggestion-item"></div>
+                    <button id="random-discovery" class="btn btn-small">🎲 Discover</button>
+                </div>
+            </aside>
+
+            <!-- Editor Area -->
+            <section class="editor-area" id="editor-area">
+                <div class="editor-header">
+                    <input type="text" id="note-title" placeholder="Note Title" class="note-title-input">
+                    <div class="editor-actions">
+                        <button id="save-note" class="btn btn-primary">💾 Save</button>
+                        <button id="delete-note" class="btn btn-danger" style="display: none;">🗑️ Delete</button>
+                    </div>
+                </div>
+                <div class="editor-container">
+                    <textarea id="note-content" placeholder="Start writing your note... Use [[Note Title]] to link to other notes."></textarea>
+                    <div id="note-preview" class="note-preview" style="display: none;"></div>
+                </div>
+                <div class="editor-footer">
+                    <button id="preview-toggle" class="btn btn-small">👁️ Preview</button>
+                    <span id="word-count" class="word-count">0 words</span>
+                </div>
+            </section>
+
+            <!-- Graph Visualization -->
+            <section class="graph-area" id="graph-area" style="display: none;">
+                <div class="graph-header">
+                    <h3>Knowledge Graph</h3>
+                    <button id="close-graph" class="btn btn-small">✕ Close</button>
+                </div>
+                <div id="graph-container" class="graph-container"></div>
+            </section>
+        </main>
+
+        <!-- Search Overlay -->
+        <div id="search-overlay" class="search-overlay" style="display: none;">
+            <div class="search-container">
+                <div class="search-header">
+                    <input type="text" id="search-input" placeholder="Search notes..." class="search-input">
+                    <button id="close-search" class="btn btn-small">✕ Close</button>
+                </div>
+                <div id="search-results" class="search-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>
+
