@@ -26,7 +26,7 @@ function closeGraph() {
 
 async function loadGraphData() {
     try {
-        const response = await fetch(`${API_BASE}/graph/data`);
+        const response = await fetch(`${API_BASE}/graph/`);
         const data = await response.json();
         renderGraph(data);
     } catch (err) {
@@ -298,4 +298,3 @@ export {
     dragended,
     resizeGraph
 };
-

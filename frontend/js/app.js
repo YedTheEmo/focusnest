@@ -1,5 +1,5 @@
 import { initializeEditor } from './editor.js';
-import { toggleSearch, closeSearch } from './search.js';
+import { toggleSearch, closeSearch, performSearch } from './search.js';
 import { toggleGraph, closeGraph } from './graph.js';
 import { AppState, API_BASE } from './state.js';
 
@@ -37,6 +37,15 @@ function setupEventListeners() {
     document.getElementById('close-graph').addEventListener('click', closeGraph);
     document.getElementById('refresh-suggestions').addEventListener('click', loadDailySuggestions);
     document.getElementById('random-discovery').addEventListener('click', loadRandomNote);
+    document.getElementById('dark-mode-toggle').addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const btn = document.getElementById('dark-mode-toggle');
+        if (document.body.classList.contains('dark-mode')) {
+            btn.textContent = '☀️ Light Mode';
+        } else {
+            btn.textContent = '🌙 Dark Mode';
+        }
+    });
     document.addEventListener('keydown', handleKeyboardShortcuts);
 }
 
@@ -46,7 +55,12 @@ async function loadRecentNotes() {
         const response = await fetch(`${API_BASE}/notes/`);
         const notes = await response.json();
         AppState.notes = notes;
-        renderRecentNotes(notes.slice(0, 10));
+        renderRecentNotes(notes);
+        // Also populate all notes section if it exists
+        const allNotesContainer = document.getElementById('all-notes');
+        if (allNotesContainer) {
+            renderAllNotes(notes);
+        }
     } catch (error) {
         console.error('Failed to load notes:', error);
         showNotification('Failed to load notes', 'error');
@@ -56,9 +70,76 @@ async function loadRecentNotes() {
 function renderRecentNotes(notes) {
     const container = document.getElementById('recent-notes');
     container.innerHTML = '';
-    notes.forEach(note => {
+    notes.slice(0, 10).forEach(note => {
         const noteElement = createNoteListItem(note);
         container.appendChild(noteElement);
+    });
+}
+
+function groupNotesByDate(notes) {
+    const groups = { Today: [], 'This Week': [], Earlier: [] };
+    const now = new Date();
+    notes.forEach(note => {
+        const updated = new Date(note.updated_at);
+        const diffDays = (now - updated) / (1000 * 60 * 60 * 24);
+        if (diffDays < 1) {
+            groups.Today.push(note);
+        } else if (diffDays < 7) {
+            groups['This Week'].push(note);
+        } else {
+            groups.Earlier.push(note);
+        }
+    });
+    return groups;
+}
+
+function renderAllNotes(notes) {
+    const container = document.getElementById('all-notes');
+    if (!container) return;
+    container.innerHTML = '';
+    const groups = groupNotesByDate(notes);
+    Object.entries(groups).forEach(([group, groupNotes]) => {
+        if (groupNotes.length === 0) return;
+        // Collapsible group header
+        const groupHeader = document.createElement('div');
+        groupHeader.className = 'note-group-header';
+        groupHeader.innerHTML = `<span>${group} (${groupNotes.length})</span> <button class="toggle-group">▼</button>`;
+        container.appendChild(groupHeader);
+        // Group notes container
+        const groupContainer = document.createElement('div');
+        groupContainer.className = 'note-group-container';
+        groupContainer.style.display = 'block';
+        // Pagination: show only first 10, add Load More if needed
+        let shown = 10;
+        function renderGroupNotes() {
+            groupContainer.innerHTML = '';
+            groupNotes.slice(0, shown).forEach(note => {
+                const noteElement = createNoteListItem(note);
+                groupContainer.appendChild(noteElement);
+            });
+            if (shown < groupNotes.length) {
+                const loadMore = document.createElement('button');
+                loadMore.className = 'btn btn-small load-more';
+                loadMore.textContent = 'Load More';
+                loadMore.onclick = () => {
+                    shown += 10;
+                    renderGroupNotes();
+                };
+                groupContainer.appendChild(loadMore);
+            }
+        }
+        renderGroupNotes();
+        container.appendChild(groupContainer);
+        // Collapsing logic
+        groupHeader.querySelector('.toggle-group').onclick = () => {
+            if (groupContainer.style.display === 'none') {
+                groupContainer.style.display = 'block';
+                groupHeader.querySelector('.toggle-group').textContent = '▼';
+            } else {
+                groupContainer.style.display = 'none';
+                groupHeader.querySelector('.toggle-group').textContent = '►';
+            }
+        };
     });
 }
 
@@ -67,9 +148,13 @@ function createNoteListItem(note) {
     element.className = 'note-item';
     element.innerHTML = `
         <h4>${escapeHtml(note.title)}</h4>
-        <p>${escapeHtml(note.content.substring(0, 100))}${note.content.length > 100 ? '...' : ''}</p>
+        <p class="note-preview">${escapeHtml(note.content.substring(0, 100))}${note.content.length > 100 ? '...' : ''}</p>
     `;
     element.addEventListener('click', () => loadNote(note.id));
+    // Highlight selected note
+    if (AppState.currentNote && AppState.currentNote.id === note.id) {
+        element.classList.add('selected');
+    }
     return element;
 }
 
@@ -224,7 +309,7 @@ async function loadDailySuggestions() {
     try {
         const response = await fetch(`${API_BASE}/search/resurface/daily`);
         const result = await response.json();
-        renderSuggestions(result.suggestions);
+        renderSuggestions(result.notes);
     } catch (error) {
         console.error('Failed to load suggestions:', error);
     }
