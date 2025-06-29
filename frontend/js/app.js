@@ -421,5 +421,13 @@ function showNotification(message, type = 'info') {
     setTimeout(() => notification.remove(), 3000);
 }
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/static/service-worker.js')
+      .then(reg => console.log('Service Worker registered:', reg))
+      .catch(err => console.error('Service Worker registration failed:', err));
+  });
+}
+
 
 export { loadNote };

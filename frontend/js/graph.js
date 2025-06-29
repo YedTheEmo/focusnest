@@ -109,6 +109,8 @@ function renderGraph(data) {
         .attr('stroke', '#fff')
         .attr('stroke-width', 2);
 
+    // Set text color based on dark mode
+    const isDark = document.body.classList.contains('dark-mode');
     node.append('text')
         .attr('class', 'node-label')
         .attr('dx', 0)
@@ -116,7 +118,7 @@ function renderGraph(data) {
         .attr('text-anchor', 'middle')
         .attr('font-size', '10px')
         .attr('font-family', 'Arial, sans-serif')
-        .attr('fill', '#333')
+        .attr('fill', isDark ? '#e0e0e0' : '#333')
         .attr('pointer-events', 'none')
         .text(d => {
             const title = d.title || d.id;
@@ -201,6 +203,14 @@ function renderGraph(data) {
 
     addGraphLegend(g, width, height);
 
+    // Listen for dark mode changes and update text color
+    const observer = new MutationObserver(() => {
+        const isDark = document.body.classList.contains('dark-mode');
+        g.selectAll('.node-label').attr('fill', isDark ? '#e0e0e0' : '#333');
+        g.selectAll('.legend-item text').attr('fill', isDark ? '#e0e0e0' : '#333');
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
     setTimeout(() => {
         const bounds = g.node().getBBox();
         const midX = bounds.x + bounds.width / 2;
@@ -247,7 +257,7 @@ function addGraphLegend(container, width, height) {
         .attr('dy', '.35em')
         .attr('font-size', '11px')
         .attr('font-family', 'Arial, sans-serif')
-        .attr('fill', '#333')
+        .attr('fill', document.body.classList.contains('dark-mode') ? '#e0e0e0' : '#333')
         .text(d => d.label);
 }
 

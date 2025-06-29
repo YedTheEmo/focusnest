@@ -108,6 +108,26 @@ body.dark-mode .search-result-title {
 body.dark-mode .search-result-content {
     color: #b2bec3 !important;
 }
+body.dark-mode .graph-node {
+    stroke: #23272a !important;
+}
+body.dark-mode .graph-link {
+    stroke: #a29bfe !important;
+}
+body.dark-mode .graph-text {
+    fill: #e0e0e0 !important;
+}
+body.dark-mode .note-link {
+    color: #a29bfe !important;
+    background: rgba(162, 155, 254, 0.15) !important;
+}
+body.dark-mode .note-link:hover {
+    background: rgba(162, 155, 254, 0.25) !important;
+}
+body.dark-mode .broken-link {
+    color: #ff7675 !important;
+    background: rgba(255, 118, 117, 0.15) !important;
+}
 
 /* Layout */
 #app {
